@@ -17,7 +17,7 @@ gulp.task 'build', ->
   gulp.src('source/autogrow.coffee')
   .pipe plumber()
   .pipe preprocess()
-  .pipe iife(dependencies: {require: 'jquery', global: '$'})
+  .pipe iife(global: 'TextHeight', dependencies: {require: 'jquery', global: '$'})
   .pipe concat('autogrow.coffee')
   .pipe gulp.dest('build')
   .pipe coffee()
