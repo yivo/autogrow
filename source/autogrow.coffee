@@ -10,10 +10,7 @@ escape = do ->
 
 nl2br = (text) -> text.replace(/\n\r?/g, '<br>')
 
-createMirror = ($base) ->
-  mirror = document.createElement('div')
-  $base.after(mirror)
-  $(mirror)
+createMirror = -> $(document.createElement('div'))
 
 styleBase = ($base) ->
   base                 = $base[0]
@@ -47,17 +44,19 @@ convertText = (text, options) ->
   t += '\n_' if options?.padding
   t
 
+$body = null
 measure = (text, base, options) ->
   $base   = $(base)
   $mirror = $base.data('autogrow-mirror')
 
   if $mirror?
     styleMirror($mirror, $base)
-    $base.after($mirror)
   else
-    $mirror = styleMirror(createMirror($base), $base)
+    $mirror = styleMirror(createMirror(), $base)
     $base.data('autogrow-mirror', $mirror)
 
+  $body ?= $(document.body)
+  $body.append($mirror)
   content              = convertText(text, options)
   $mirror[0].innerHTML = content
   height               = $mirror.height()
@@ -66,7 +65,8 @@ measure = (text, base, options) ->
 
 autogrow = (base, options) ->
   $base   = styleBase($(base))
-  $mirror = styleMirror(createMirror($base), $base)
+  $mirror = styleMirror(createMirror(), $base)
+  $base.after($mirror[0])
   value   = if $base.is('textarea') then -> base.value else -> $base.text()
   grow    = ->
     content              = convertText(value(), options)

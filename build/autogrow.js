@@ -13,7 +13,7 @@
       root.TextHeight = factory(root);
     }
   })(function(__root__) {
-    var autogrow, convertText, createMirror, escape, measure, nl2br, styleBase, styleMirror;
+    var $body, autogrow, convertText, createMirror, escape, measure, nl2br, styleBase, styleMirror;
     escape = (function() {
       var iteratee, regex, rules;
       regex = /[&<>"]/g;
@@ -34,11 +34,8 @@
     nl2br = function(text) {
       return text.replace(/\n\r?/g, '<br>');
     };
-    createMirror = function($base) {
-      var mirror;
-      mirror = document.createElement('div');
-      $base.after(mirror);
-      return $(mirror);
+    createMirror = function() {
+      return $(document.createElement('div'));
     };
     styleBase = function($base) {
       var base;
@@ -77,17 +74,21 @@
       }
       return t;
     };
+    $body = null;
     measure = function(text, base, options) {
       var $base, $mirror, content, height;
       $base = $(base);
       $mirror = $base.data('autogrow-mirror');
       if ($mirror != null) {
         styleMirror($mirror, $base);
-        $base.after($mirror);
       } else {
-        $mirror = styleMirror(createMirror($base), $base);
+        $mirror = styleMirror(createMirror(), $base);
         $base.data('autogrow-mirror', $mirror);
       }
+      if ($body == null) {
+        $body = $(document.body);
+      }
+      $body.append($mirror);
       content = convertText(text, options);
       $mirror[0].innerHTML = content;
       height = $mirror.height();
@@ -97,7 +98,8 @@
     autogrow = function(base, options) {
       var $base, $mirror, grow, value;
       $base = styleBase($(base));
-      $mirror = styleMirror(createMirror($base), $base);
+      $mirror = styleMirror(createMirror(), $base);
+      $base.after($mirror[0]);
       value = $base.is('textarea') ? function() {
         return base.value;
       } : function() {
