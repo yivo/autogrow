@@ -1,0 +1,20 @@
+{
+  "name": "autogrow",
+  "homepage": "https://github.com/yivo/autogrow",
+  "authors": [
+    "Yaroslav Konoplov <yaroslav@inbox.com>"
+  ],
+  "description": "Make the textarea resize automatically",
+  "main": "build/autogrow.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "coffeespec",
+    "source",
+    "spec"
+  ]
+}
