@@ -96,26 +96,34 @@
       return height;
     };
     autogrow = function(base, options) {
-      var $base, $mirror, grow, value;
-      $base = styleBase($(base));
-      $mirror = styleMirror(createMirror(), $base);
-      $base.after($mirror[0]);
-      value = $base.is('textarea') ? function() {
-        return base.value;
-      } : function() {
-        return $base.text();
-      };
-      grow = function() {
-        var content;
-        content = convertText(value(), options);
-        $mirror[0].innerHTML = content;
-        $base.height($mirror.height());
-      };
-      $base.on('change.autogrow', grow);
-      if ($base.is('textarea')) {
-        $base.on('input.autogrow paste.autogrow', grow);
+      var $base, $mirror, fn, grow, value;
+      $base = $(base);
+      if ($base[0] != null) {
+        if ((fn = $base.data('autogrow')) != null) {
+          fn();
+        } else {
+          $mirror = createMirror();
+          styleBase($base);
+          styleMirror($mirror, $base);
+          $base.after($mirror[0]);
+          value = $base.is('textarea') ? function() {
+            return base.value;
+          } : function() {
+            return $base.text();
+          };
+          grow = function() {
+            var content;
+            content = convertText(value(), options);
+            $mirror[0].innerHTML = content;
+            $base.height($mirror.height());
+          };
+          $base.on('change.autogrow', grow);
+          if ($base.is('textarea')) {
+            $base.on('input.autogrow paste.autogrow', grow);
+          }
+          grow();
+        }
       }
-      grow();
     };
     $.fn.autogrow = function(options) {
       var el, i, len;

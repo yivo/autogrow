@@ -64,24 +64,33 @@ measure = (text, base, options) ->
   height
 
 autogrow = (base, options) ->
-  $base   = styleBase($(base))
-  $mirror = styleMirror(createMirror(), $base)
-  $base.after($mirror[0])
-  value   = if $base.is('textarea') then -> base.value else -> $base.text()
-  grow    = ->
-    content              = convertText(value(), options)
-    $mirror[0].innerHTML = content
-    $base.height($mirror.height())
-    return
+  $base = $(base)
+  if $base[0]?
+    if (fn = $base.data('autogrow-fn'))?
+      fn()
+    else
+      $mirror = createMirror()
+      styleBase($base)
+      styleMirror($mirror, $base)
+      $base.after($mirror[0])
+      txt     = $base.is('textarea')
+      grow    = ->
+        content              = convertText(if txt then base.value else $base.text(), options)
+        $mirror[0].innerHTML = content
+        $base.height($mirror.height()) # TODO Height fraction http://stackoverflow.com/questions/3603065/how-to-make-jquery-to-not-round-value-returned-by-width
+        return
 
-  # Bind primary grow event
-  $base.on('change.autogrow', grow)
+      $base.data('autogrow-fn', grow)
 
-  # Bind extra events if base is textarea
-  $base.on('input.autogrow paste.autogrow', grow) if $base.is('textarea')
+      # Bind primary grow event
+      $base.on('change.autogrow', grow)
 
-  # Fire the event for text already present
-  grow(); return
+      # Bind extra events if base is textarea
+      $base.on('input.autogrow paste.autogrow', grow) if txt
+
+      # Fire the event for text already present
+      grow()
+  return
 
 $.fn.autogrow = (options) ->
   autogrow(el, options) for el in this
