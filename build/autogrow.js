@@ -32,7 +32,7 @@
       };
     })();
     nl2br = function(text) {
-      return text.replace(/\n\r?/g, '<br>');
+      return text.replace(/\n\r?/g, '<br>&nbsp;');
     };
     createMirror = function() {
       return $(document.createElement('div'));
@@ -40,39 +40,42 @@
     styleBase = function($base) {
       var base;
       base = $base[0];
-      base.style.overflow = 'hidden';
+      base.style.overflowY = 'hidden';
+      base.style.minHeight = 'initial';
       if ($base.is('textarea')) {
         base.style.resize = 'none';
-        base.style.minHeight = base.rows + 'em';
       }
       return $base;
     };
     styleMirror = function($mirror, $base) {
       var mirror;
       mirror = $mirror[0];
-      mirror.style.display = 'none';
+      mirror.style.display = 'block';
+      mirror.style.position = 'absolute';
+      mirror.style.top = '0px';
+      mirror.style.left = '-9999px';
       mirror.style.wordWrap = $base.css('word-wrap');
+      mirror.style.msWordWrap = $base.css('-ms-word-wrap');
       mirror.style.whiteSpace = $base.css('white-space');
       mirror.style.wordBreak = $base.css('word-break');
+      mirror.style.msWordBreak = $base.css('-ms-word-break');
+      mirror.style.lineBreak = $base.css('line-break');
       mirror.style.overflowWrap = $base.css('overflow-wrap');
+      mirror.style.letterSpacing = $base.css('letter-spacing');
       mirror.style.padding = $base.css('paddingTop') + ' ' + $base.css('paddingRight') + ' ' + $base.css('paddingBottom') + ' ' + $base.css('paddingLeft');
       mirror.style.width = $base.css('width');
       mirror.style.fontFamily = $base.css('font-family');
       mirror.style.fontSize = $base.css('font-size');
+      mirror.style.fontWeight = $base.css('font-weight');
       mirror.style.lineHeight = $base.css('line-height');
       mirror.style.textAlign = $base.css('text-align');
+      mirror.style.textDecoration = $base.css('text-decoration');
+      mirror.style.border = $base.css('border');
       return $mirror;
     };
     convertText = function(text, options) {
       var t;
-      t = text != null ? nl2br(escape(text)) : '';
-      if (t.length === 0 || /<br>$/.test(t)) {
-        t += '_';
-      }
-      if (options != null ? options.padding : void 0) {
-        t += '\n_';
-      }
-      return t;
+      return t = nl2br(escape(text)) + '<br>&nbsp;';
     };
     $body = null;
     measure = function(text, base, options) {
@@ -96,29 +99,28 @@
       return height;
     };
     autogrow = function(base, options) {
-      var $base, $mirror, fn, grow, value;
+      var $base, $mirror, fn, grow, txt;
       $base = $(base);
       if ($base[0] != null) {
-        if ((fn = $base.data('autogrow')) != null) {
+        if ((fn = $base.data('autogrow-fn')) != null) {
           fn();
         } else {
           $mirror = createMirror();
           styleBase($base);
           styleMirror($mirror, $base);
           $base.after($mirror[0]);
-          value = $base.is('textarea') ? function() {
-            return base.value;
-          } : function() {
-            return $base.text();
-          };
+          txt = $base.is('textarea');
           grow = function() {
-            var content;
-            content = convertText(value(), options);
+            var content, value;
+            value = txt ? base.value : base.innerText || base.textContent;
+            content = convertText(value, options);
             $mirror[0].innerHTML = content;
-            $base.height($mirror.height());
+            $mirror[0].style.width = ($base[0].getBoundingClientRect().width) + "px";
+            $base[0].style.height = ($mirror[0].getBoundingClientRect().height) + "px";
           };
+          $base.data('autogrow-fn', grow);
           $base.on('change.autogrow', grow);
-          if ($base.is('textarea')) {
+          if (txt) {
             $base.on('input.autogrow paste.autogrow', grow);
           }
           grow();
