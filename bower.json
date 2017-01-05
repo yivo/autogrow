@@ -2,7 +2,7 @@
   "name": "autogrow",
   "homepage": "https://github.com/yivo/autogrow",
   "authors": [
-    "Yaroslav Konoplov <yaroslav@inbox.com>"
+    "Yaroslav Konoplov <eahome00@gmail.com>"
   ],
   "description": "Make the textarea resize automatically",
   "main": "build/autogrow.js",

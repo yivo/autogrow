@@ -1,116 +1,73 @@
-escape = do ->
-  regex = /[&<>"]/g
-  rules =
-    '&': '&amp;'
-    '<': '&lt;'
-    '>': '&gt;'
-    '"': '&quot;'
-  iteratee = (c) -> rules[c] ? c
-  (text) -> text.replace(regex, iteratee)
+class Autogrow
+  constructor: ($origin, options) ->
+    @validate($origin, options)
+    @$origin      = $origin
+    @options      = options
+    @origin       = $origin[0]
+    @initialized  = false
+    @textareaMode = @origin.tagName is 'TEXTAREA'
 
-nl2br = (text) -> text.replace(/\n\r?/g, '<br>&nbsp;')
+  initialize: ->
+    return if @initialized
 
-createMirror = -> $(document.createElement('div'))
+    @mirror  = document.createElement('div')
+    @$mirror = $(@mirror)
 
-styleBase = ($base) ->
-  base                 = $base[0]
-  base.style.overflowY  = 'hidden'
-  base.style.minHeight = 'initial'
-  if $base.is('textarea')
-    base.style.resize = 'none'
-  $base
+    @prepareOrigin()
+    @prepareMirror()
 
-styleMirror = ($mirror, $base) ->
-  mirror                    = $mirror[0]
-  mirror.style.display      = 'block'
-  mirror.style.position      = 'absolute'
-  mirror.style.top      = '0px'
-  mirror.style.left      = '-9999px'
+    grow   = => @grow()  ; return
+    remove = => @remove(); return
 
-  mirror.style.wordWrap     = $base.css('word-wrap')
-  mirror.style.msWordWrap     = $base.css('-ms-word-wrap')
-  mirror.style.whiteSpace   = $base.css('white-space')
-  mirror.style.wordBreak    = $base.css('word-break')
-  mirror.style.msWordBreak    = $base.css('-ms-word-break')
-  mirror.style.lineBreak    = $base.css('line-break')
-  mirror.style.overflowWrap = $base.css('overflow-wrap')
-  mirror.style.letterSpacing = $base.css('letter-spacing')
+    # Bind general change event (useful when origin isn't textarea)
+    @$origin.on 'change.autogrow', grow
 
-  mirror.style.padding      = $base.css('paddingTop')     + ' ' +
-                              $base.css('paddingRight')   + ' ' +
-                              $base.css('paddingBottom')  + ' ' +
-                              $base.css('paddingLeft')
-  mirror.style.width        = $base.css('width')
-  mirror.style.fontFamily   = $base.css('font-family')
-  mirror.style.fontSize     = $base.css('font-size')
-  mirror.style.fontWeight     = $base.css('font-weight')
-  mirror.style.lineHeight   = $base.css('line-height')
-  mirror.style.textAlign    = $base.css('text-align')
-  mirror.style.textDecoration = $base.css('text-decoration')
-  mirror.style.border    = $base.css('border')
+    # On origin removal remove mirror
+    @$origin.on 'remove.autogrow', remove
+      
+    # Bind extra events if origin is textarea
+    if @textareaMode
+      @$origin.on 'input.autogrow paste.autogrow keyup.autogrow focus.autogrow', grow
 
-  $mirror
+    @$origin.after(@$mirror)
 
-convertText = (text, options) ->
-  t = nl2br(escape(text)) + '<br>&nbsp;'
+    # Fire the event for text already present
+    grow()
 
-$body = null
-measure = (text, base, options) ->
-  $base   = $(base)
-  $mirror = $base.data('autogrow-mirror')
+    @initialized = true
 
-  if $mirror?
-    styleMirror($mirror, $base)
-  else
-    $mirror = styleMirror(createMirror(), $base)
-    $base.data('autogrow-mirror', $mirror)
+    this
 
-  $body ?= $(document.body)
-  $body.append($mirror)
-  content              = convertText(text, options)
-  $mirror[0].innerHTML = content
-  height               = $mirror.height()
-  $mirror.detach()
-  height
+  grow: ->
+    text = if @textareaMode then @origin.value else (@origin.innerText || @origin.textContent)
+    @mirror.innerHTML    = @textToHTML(text, @options)
+    @mirror.style.width  = "#{@origin.getBoundingClientRect().width}px"
+    @origin.style.height = "#{@mirror.getBoundingClientRect().height}px"
+    return
 
-autogrow = (base, options) ->
-  $base = $(base)
+  remove: ->
+    @$origin.removeClass('autogrow-origin')
+    @$origin.removeData('autogrow')
+    @resetOriginStyles(@$origin)
+    @$mirror.remove()
+    @$origin = @origin = @$mirror = @mirror = null
+    return
 
-  if $base[0]?
-    if (fn = $base.data('autogrow-fn'))?
-      fn()
-    else
-      $mirror = createMirror()
-      styleBase($base)
-      styleMirror($mirror, $base)
-      $base.after($mirror[0])
-      txt     = $base.is('textarea')
-      grow    = ->
-        value = if txt then base.value else (base.innerText || base.textContent)
+  prepareOrigin: ->
+    @$origin.addClass('autogrow-origin')
+    @applyOriginStyles(@$origin, @options)
+    return
 
-        content              = convertText(value, options)
-        $mirror[0].innerHTML = content
+  prepareMirror: ->
+    @mirror.className = 'autogrow-mirror'
+    @applyMirrorStyles(@$origin, @$mirror, @options)
+    return
 
-        $mirror[0].style.width = "#{$base[0].getBoundingClientRect().width}px"
-
-        $base[0].style.height = "#{$mirror[0].getBoundingClientRect().height}px"
-
-        return
-
-      $base.data('autogrow-fn', grow)
-
-      # Bind primary grow event
-      $base.on('change.autogrow', grow)
-
-      # Bind extra events if base is textarea
-      $base.on('input.autogrow paste.autogrow', grow) if txt
-
-      # Fire the event for text already present
-      grow()
-  return
-
-$.fn.autogrow = (options) ->
-  autogrow(el, options) for el in this
-  this
-
-{autogrow, measure, nl2br}
+  validate: ($origin, options) ->
+    unless $origin instanceof $
+      throw new Error("Autogrow: $origin must be jQuery object but #{$origin} given")
+    unless $origin[0]?
+      throw new Error("Autogrow: zero-length $origin given")
+    if $origin.data('autogrow')?
+      throw new Error("Autogrow: autogrow has already been registered for #{$origin[0]}")
+    return
