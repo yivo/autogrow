@@ -12,18 +12,18 @@ nl2br = (text) -> text.replace(/\n\r?/g, '<br />&nbsp;')
 
 Helper =
   applyOriginStyles: ($origin, options) ->
-    origin                  = $origin[0]
-    origin.style.overflowY  = 'hidden'
-    origin.style.minHeight  = 'initial'
-    origin.style.resize     = 'none' if origin.tagName is 'TEXTAREA'
+    origin                 = $origin[0]
+    origin.style.overflowY = 'hidden'
+    origin.style.minHeight = 'initial'
+    origin.style.resize    = 'none' if origin.tagName is 'TEXTAREA'
     return
 
   resetOriginStyles: ($origin) ->
-    origin                  = $origin[0]
-    origin.style.overflowY  = ''
-    origin.style.minHeight  = ''
-    origin.style.resize     = ''
-    origin.style.height     = ''
+    origin                 = $origin[0]
+    origin.style.overflowY = ''
+    origin.style.minHeight = ''
+    origin.style.resize    = ''
+    origin.style.height    = ''
     return
     
   applyMirrorStyles: ($origin, $mirror, options) ->
@@ -50,6 +50,7 @@ Helper =
     mirror.style.fontFamily     = $origin.css('font-family')
     mirror.style.fontSize       = $origin.css('font-size')
     mirror.style.fontWeight     = $origin.css('font-weight')
+    mirror.style.fontVariant    = $origin.css('font-variant')
     mirror.style.lineHeight     = $origin.css('line-height')
 
     mirror.style.textAlign      = $origin.css('text-align')

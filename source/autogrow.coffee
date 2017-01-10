@@ -65,9 +65,12 @@ class Autogrow
 
   validate: ($origin, options) ->
     unless $origin instanceof $
-      throw new Error("Autogrow: $origin must be jQuery object but #{$origin} given")
+      throw new TypeError("[Autogrow] $origin must be jQuery object but #{$origin} given")
     unless $origin[0]?
-      throw new Error("Autogrow: zero-length $origin given")
+      throw new TypeError("[Autogrow] Zero-length $origin given")
     if $origin.data('autogrow')?
-      throw new Error("Autogrow: autogrow has already been registered for #{$origin[0]}")
+      throw new Error("[Autogrow] Autogrow has already been registered for #{$origin[0]}")
     return
+
+  for own methodname, methodbody of Helper
+    this::[methodname] = methodbody

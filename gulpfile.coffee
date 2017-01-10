@@ -9,15 +9,17 @@ gulp.task 'default', ['build', 'watch'], ->
 
 gulp.task 'build', ->
   dependencies = [
-    {global: '$',        require: 'jquery'}
-    {global: 'Math',     native: true}
-    {global: 'document', native: true}
+    {global: '$',         require: 'jquery'}
+    {global: 'Math',      native:  true}
+    {global: 'document',  native:  true}
+    {global: 'Error',     native:  true}
+    {global: 'TypeError', native:  true}
   ]
     
   gulp.src('source/__manifest__.coffee')
     .pipe plumber()
     .pipe preprocess()
-    .pipe iife({global: 'TextHeight', dependencies})
+    .pipe iife({global: 'Autogrow', dependencies})
     .pipe concat('autogrow.coffee')
     .pipe gulp.dest('build')
     .pipe coffee()
