@@ -1,9 +1,10 @@
 gulp       = require('gulp')
 concat     = require('gulp-concat')
 coffee     = require('gulp-coffee')
-iife       = require('gulp-iife-wrap')
+umd        = require('gulp-umd-wrap')
 plumber    = require('gulp-plumber')
 preprocess = require('gulp-preprocess')
+fs         = require('fs')
 
 gulp.task 'default', ['build', 'watch'], ->
 
@@ -16,10 +17,12 @@ gulp.task 'build', ->
     {global: 'TypeError', native:  true}
   ]
     
+  header = fs.readFileSync('source/__license__.coffee').toString('UTF-8')
+  
   gulp.src('source/__manifest__.coffee')
     .pipe plumber()
     .pipe preprocess()
-    .pipe iife({global: 'Autogrow', dependencies})
+    .pipe umd({global: 'Autogrow', dependencies, header})
     .pipe concat('autogrow.coffee')
     .pipe gulp.dest('build')
     .pipe coffee()

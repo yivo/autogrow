@@ -2,4 +2,4 @@
 # @include autogrow.coffee
 # @include api.coffee
 
-{initialize: autogrow, nl2br, VERSION: '1.1.1'}
+{initialize: autogrow, nl2br, VERSION: '1.1.2'}

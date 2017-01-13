@@ -1,17 +1,22 @@
+
+/*!
+ * autogrow 1.1.2 | https://github.com/yivo/autogrow | MIT License
+ */
+
 (function() {
   var hasProp = {}.hasOwnProperty;
 
   (function(factory) {
-    var root;
-    root = typeof self === 'object' && self !== null && self.self === self ? self : typeof global === 'object' && global !== null && global.global === global ? global : void 0;
+    var __root__;
+    __root__ = typeof self === 'object' && self !== null && self.self === self ? self : typeof global === 'object' && global !== null && global.global === global ? global : Function('return this')();
     if (typeof define === 'function' && typeof define.amd === 'object' && define.amd !== null) {
-      define(['jquery', 'exports'], function($) {
-        return root.Autogrow = factory(root, Math, document, Error, TypeError, $);
+      define(['jquery'], function($) {
+        return __root__.Autogrow = factory(__root__, Math, document, Error, TypeError, $);
       });
     } else if (typeof module === 'object' && module !== null && typeof module.exports === 'object' && module.exports !== null) {
-      module.exports = factory(root, Math, document, Error, TypeError, require('jquery'));
+      module.exports = factory(__root__, Math, document, Error, TypeError, require('jquery'));
     } else {
-      root.Autogrow = factory(root, Math, document, Error, TypeError, root.$);
+      __root__.Autogrow = factory(__root__, Math, document, Error, TypeError, $);
     }
   })(function(__root__, Math, document, Error, TypeError, $) {
     var Autogrow, Helper, autogrow, escape, nl2br;
@@ -207,7 +212,7 @@
     return {
       initialize: autogrow,
       nl2br: nl2br,
-      VERSION: '1.1.1'
+      VERSION: '1.1.2'
     };
   });
 
